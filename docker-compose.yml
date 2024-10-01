@@ -10,3 +10,24 @@ services:
     environment:
       - ENVIRONMENT=production
     restart: unless-stopped
+    depends_on:
+      - flaresolverr
+    networks:
+      - internal
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    ports:
+      - "${PORT:-8191}:8191"
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=Europe/Dublin
+    networks:
+      - internal
+
+networks:
+  internal:
+    external: false
