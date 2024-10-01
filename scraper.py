@@ -25,25 +25,33 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 }
 
+FLARESOLVERR_URL = "http://192.168.1.34:8191/"
+
 async def fetch_player_stats(username: str, season: str = "current") -> Optional[PlayerStats]:
     url = f"{BASE_URL}/{username}/overview"
     if season == "all":
         url += "?season=all"
-    
+
+    payload = {
+        "cmd": "request.get",
+        "url": url,
+        "maxTimeout": 60000,  
+        "headers": HEADERS  
+    }
+
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(url, headers=HEADERS)
-            response.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            print(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
-            return None
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return None
-        
-        soup = BeautifulSoup(response.text, "html.parser")
-        
-        try:
+            response = await client.post(FLARESOLVERR_URL, json=payload)
+            response.raise_for_status()  # Ensure we handle any errors
+
+            page_content = response.json().get("solution", {}).get("response", "")
+
+            if not page_content:
+                print("No page content received.")
+                return None
+
+            soup = BeautifulSoup(page_content, "html.parser")
+
             # Current Rank
             current_rank_section = soup.find("div", class_="rating-entry__rank-info")
             current_rank = current_rank_section.find("div", class_="value").text.strip() if current_rank_section else "N/A"
@@ -80,6 +88,7 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
             win_section = soup.find('span', title="Win %")
             win_percentage = win_section.find_next('span', class_='value').text.strip().replace("%", "").strip() if win_section else "0.0"
 
+            # Return parsed data as PlayerStats object
             return PlayerStats(
                 username=username,
                 platform="valorant",
@@ -92,9 +101,10 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
                 headshot_percentage=float(headshot_percentage) if headshot_percentage.replace('.', '', 1).isdigit() else 0.0,  
                 win_percentage=float(win_percentage) if win_percentage.replace('.', '', 1).isdigit() else 0.0  
             )
-        except AttributeError as e:
-            print(f"Error extracting data: {e}")
+
+        except httpx.HTTPStatusError as e:
+            print(f"HTTP error occurred: {e.response.status_code} - {e.response.text}")
             return None
-        except ValueError as e:
-            print(f"Error converting data types: {e}")
+        except Exception as e:
+            print(f"An error occurred: {e}")
             return None
