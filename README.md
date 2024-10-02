@@ -130,7 +130,7 @@ class PlayerStats(BaseModel):
 
 ## License
 
-This project is licensed under the [GNU GENERAL PUBLIC LICENSE Version 3License ](./LICENSE). See the LICENSE file for details.
+This project is licensed under the [GPL-3.0 license ](./LICENSE). See the LICENSE file for details.
 
 ---
 
