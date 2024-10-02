@@ -14,7 +14,7 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 }
 
-FLARESOLVERR_URL = "http://flaresolverr:8191/v1"
+FLARESOLVERR_URL = "http://192.168.1.34:8191/v1" #flaresolverr
 
 async def fetch_player_stats(username: str, season: str = "current") -> Optional[PlayerStats]:
     url = f"{BASE_URL}/{quote(username)}/overview"
@@ -115,6 +115,10 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
                     if tracker_score_value:
                         tracker_score_text = tracker_score_value.text.strip().split()[0]
                         tracker_score = int(tracker_score_text) if tracker_score_text.isdigit() else None
+                        
+                # ACS (Average Combat Score)
+                acs_section = soup.find('span', title="ACS")
+                acs_value = acs_section.find_next('span', class_='value').text.strip() if acs_section else "0.0"
 
                 return PlayerStats(
                     username=username,
@@ -129,7 +133,8 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
                     headshot_percentage=float(headshot_percentage) if headshot_percentage.replace('.', '', 1).isdigit() else 0.0,
                     win_percentage=float(win_percentage) if win_percentage.replace('.', '', 1).isdigit() else 0.0,
                     hours_played=float(hours_played) if hours_played.replace('.', '', 1).isdigit() else 0.0,
-                    tracker_score=tracker_score
+                    tracker_score=tracker_score,
+                    acs=float(acs_value) if acs_value.replace('.', '', 1).isdigit() else 0.0
                 )
 
         except aiohttp.ClientResponseError as e:

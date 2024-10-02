@@ -16,3 +16,4 @@ class PlayerStats(BaseModel):
     win_percentage: Optional[float] = None
     hours_played: Optional[float] = None
     tracker_score: Optional[int] = None
+    acs: Optional[float] = None
