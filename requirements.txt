@@ -3,3 +3,4 @@ aiohttp==3.10.8
 beautifulsoup4==4.12.3
 pydantic==2.9.2
 uvicorn==0.31.0
+python-dotenv==1.0.1
