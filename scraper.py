@@ -42,12 +42,30 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
                 soup = BeautifulSoup(page_content, "html.parser")
 
                 # Current Rank
-                current_rank_section = soup.find("div", class_="rating-entry__rank-info")
-                current_rank = current_rank_section.find("div", class_="value").text.strip() if current_rank_section else "N/A"
+                current_rank_section = soup.find("div", class_="rating-summary__content")
+
+                if current_rank_section:
+                    rank_info = current_rank_section.find("div", class_="rating-entry__rank-info")
+                    if rank_info:
+                        current_rank_label = rank_info.find("div", class_="label").text.strip()
+                        current_rank_value = rank_info.find("div", class_="value").text.strip()
+                        current_rank_rr = rank_info.find("span", class_="mmr")
+        
+                        if current_rank_rr:
+                            current_rank = f"{current_rank_label} {current_rank_value}".strip()
+                        else:
+                            current_rank = f"{current_rank_value}".strip()
 
                 # Peak Rank
-                peak_rank_section = current_rank_section.find_next("div", class_="rating-entry__rank-info")
-                peak_rank = peak_rank_section.find("div", class_="value").text.strip() if peak_rank_section else "N/A"
+                peak_rank_section = soup.find("div", class_="rating-summary__content rating-summary__content--secondary")
+                peak_rank = "N/A"
+                if peak_rank_section:
+                    peak_rank_info = peak_rank_section.find("div", class_="rating-entry__rank-info")
+                    if peak_rank_info:
+                        peak_rank_value = peak_rank_info.find("div", class_="value").text.strip()
+                        peak_rank_rr = peak_rank_info.find("span", class_="mmr")
+                        peak_rank_rr_value = peak_rank_rr.text.strip() if peak_rank_rr else ""
+                        peak_rank = f"{peak_rank_value}".strip()
 
                 # K/D Ratio
                 kd_ratio_section = soup.find('span', title="K/D Ratio")
