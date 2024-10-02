@@ -11,6 +11,7 @@ class PlayerStats(BaseModel):
     kd_ratio: Optional[float] = None
     current_rank: Optional[str] = None
     peak_rank: Optional[str] = None
+    peak_rank_episode: Optional[str] = None
     headshot_percentage: Optional[float] = None
     win_percentage: Optional[float] = None
     hours_played: Optional[float] = None

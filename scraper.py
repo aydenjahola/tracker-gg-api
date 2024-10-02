@@ -58,14 +58,16 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
 
                 # Peak Rank
                 peak_rank_section = soup.find("div", class_="rating-summary__content rating-summary__content--secondary")
-                peak_rank = "N/A"
+
                 if peak_rank_section:
                     peak_rank_info = peak_rank_section.find("div", class_="rating-entry__rank-info")
                     if peak_rank_info:
                         peak_rank_value = peak_rank_info.find("div", class_="value").text.strip()
-                        peak_rank_rr = peak_rank_info.find("span", class_="mmr")
-                        peak_rank_rr_value = peak_rank_rr.text.strip() if peak_rank_rr else ""
                         peak_rank = f"{peak_rank_value}".strip()
+                        
+                        # get the episode and act of the peak rank
+                        episode_act_div = peak_rank_info.find("div", class_="subtext")
+                        peak_rank_episode = episode_act_div.text.strip() if episode_act_div else "N/A"
 
                 # K/D Ratio
                 kd_ratio_section = soup.find('span', title="K/D Ratio")
@@ -119,6 +121,7 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
                     platform="valorant",
                     current_rank=current_rank,
                     peak_rank=peak_rank,
+                    peak_rank_episode=peak_rank_episode,
                     kd_ratio=float(kd_ratio) if kd_ratio.replace('.', '', 1).isdigit() else 0.0,
                     kills=int(kills) if kills.isdigit() else 0,
                     wins=int(wins) if wins.isdigit() else 0,
