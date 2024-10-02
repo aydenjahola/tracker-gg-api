@@ -2,6 +2,7 @@ import httpx
 from bs4 import BeautifulSoup
 from typing import Optional
 from pydantic import BaseModel
+from urllib.parse import quote
 
 class PlayerStats(BaseModel):
     username: str
@@ -25,10 +26,10 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 }
 
-FLARESOLVERR_URL = "http://192.168.1.34:8191/"
+FLARESOLVERR_URL = "http://192.168.1.34:8191/v1"
 
 async def fetch_player_stats(username: str, season: str = "current") -> Optional[PlayerStats]:
-    url = f"{BASE_URL}/{username}/overview"
+    url = f"{BASE_URL}/{quote(username)}/overview"
     if season == "all":
         url += "?season=all"
 
@@ -42,7 +43,7 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(FLARESOLVERR_URL, json=payload)
-            response.raise_for_status()  # Ensure we handle any errors
+            response.raise_for_status()
 
             page_content = response.json().get("solution", {}).get("response", "")
 
@@ -88,7 +89,6 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
             win_section = soup.find('span', title="Win %")
             win_percentage = win_section.find_next('span', class_='value').text.strip().replace("%", "").strip() if win_section else "0.0"
 
-            # Return parsed data as PlayerStats object
             return PlayerStats(
                 username=username,
                 platform="valorant",
