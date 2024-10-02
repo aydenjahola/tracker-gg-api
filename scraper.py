@@ -3,19 +3,7 @@ from bs4 import BeautifulSoup
 from typing import Optional
 from pydantic import BaseModel
 from urllib.parse import quote
-
-class PlayerStats(BaseModel):
-    username: str
-    platform: str
-    current_rank: Optional[str] = None
-    peak_rank: Optional[str] = None
-    level: Optional[int] = None
-    kd_ratio: Optional[float] = None
-    kills: Optional[int] = None
-    wins: Optional[int] = None
-    matches_played: Optional[int] = None
-    headshot_percentage: Optional[float] = None
-    win_percentage: Optional[float] = None
+from models import PlayerStats
 
 BASE_URL = "https://tracker.gg/valorant/profile/riot"
 
@@ -26,7 +14,7 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 }
 
-FLARESOLVERR_URL = "http://flaresolverr:8191/v1"
+FLARESOLVERR_URL = "http://flaresolverr:8191/v1" 
 
 async def fetch_player_stats(username: str, season: str = "current") -> Optional[PlayerStats]:
     url = f"{BASE_URL}/{quote(username)}/overview"
@@ -88,6 +76,24 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
                 # Win Percentage
                 win_section = soup.find('span', title="Win %")
                 win_percentage = win_section.find_next('span', class_='value').text.strip().replace("%", "").strip() if win_section else "0.0"
+                
+                # Hours Played
+                playtime_section = soup.find('span', class_='playtime')
+                if playtime_section:
+                    hours_played_text = playtime_section.text.strip()
+                    # Extract the numeric part before "h"
+                    hours_played = hours_played_text.split("h")[0].strip() if "h" in hours_played_text else "0.0"
+                else:
+                    hours_played = "0.0"
+                    
+                # Tracker Score
+                tracker_score_section = soup.find('div', class_="score__text")
+                tracker_score = None
+                if tracker_score_section:
+                    tracker_score_value = tracker_score_section.find('div', class_='value')
+                    if tracker_score_value:
+                        tracker_score_text = tracker_score_value.text.strip().split()[0]
+                        tracker_score = int(tracker_score_text) if tracker_score_text.isdigit() else None
 
                 return PlayerStats(
                     username=username,
@@ -99,7 +105,9 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
                     wins=int(wins) if wins.isdigit() else 0,
                     matches_played=int(matches) if matches.isdigit() else 0,
                     headshot_percentage=float(headshot_percentage) if headshot_percentage.replace('.', '', 1).isdigit() else 0.0,
-                    win_percentage=float(win_percentage) if win_percentage.replace('.', '', 1).isdigit() else 0.0
+                    win_percentage=float(win_percentage) if win_percentage.replace('.', '', 1).isdigit() else 0.0,
+                    hours_played=float(hours_played) if hours_played.replace('.', '', 1).isdigit() else 0.0,
+                    tracker_score=tracker_score
                 )
 
         except aiohttp.ClientResponseError as e:
