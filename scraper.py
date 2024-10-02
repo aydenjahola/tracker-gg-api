@@ -14,7 +14,7 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 }
 
-FLARESOLVERR_URL = "http://flaresolverr:8191/v1" 
+FLARESOLVERR_URL = "http://192.168.1.34:8191/v1" # "http://flaresolverr:8191/v1"
 
 async def fetch_player_stats(username: str, season: str = "current") -> Optional[PlayerStats]:
     url = f"{BASE_URL}/{quote(username)}/overview"
@@ -63,11 +63,12 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
 
                 # Wins
                 wins_section = soup.find('span', title="Wins")
-                wins = wins_section.find_next('span', class_='value').text.strip() if wins_section else "0"
+                wins = wins_section.find_next('span', class_='value').text.strip().replace(",", "") if wins_section else "0"
 
                 # Matches Played
                 matches_section = soup.find('span', class_="matches")
                 matches = matches_section.text.strip().replace("Matches", "").strip() if matches_section else "0"
+                matches = matches.replace(",", "")
 
                 # Headshot Percentage
                 headshot_section = soup.find('span', title="Headshot %")
@@ -82,7 +83,7 @@ async def fetch_player_stats(username: str, season: str = "current") -> Optional
                 if playtime_section:
                     hours_played_text = playtime_section.text.strip()
                     # Extract the numeric part before "h"
-                    hours_played = hours_played_text.split("h")[0].strip() if "h" in hours_played_text else "0.0"
+                    hours_played = hours_played_text.split("h")[0].strip().replace(",", "") if "h" in hours_played_text else "0.0"
                 else:
                     hours_played = "0.0"
                     
