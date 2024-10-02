@@ -4,6 +4,7 @@ from typing import Optional
 class PlayerStats(BaseModel):
     username: str
     platform: str
+    season: Optional[str] = None
     kills: Optional[int] = None
     wins: Optional[int] = None
     matches_played: Optional[int] = None

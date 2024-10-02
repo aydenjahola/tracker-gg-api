@@ -27,6 +27,7 @@ async def get_current_act_stats(username: str, api_key: str = Depends(get_api_ke
     if player_stats is None:
         raise HTTPException(status_code=404, detail="Player stats not found.")
     
+    player_stats.season = "Current Act"
     return player_stats
 
 @app.get("/player/{username}/all", response_model=PlayerStats)
@@ -38,4 +39,5 @@ async def get_all_seasons_stats(username: str, api_key: str = Depends(get_api_ke
     if player_stats is None:
         raise HTTPException(status_code=404, detail="Player stats not found.")
     
+    player_stats.season = "All Acts"
     return player_stats
