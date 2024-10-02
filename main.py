@@ -12,6 +12,7 @@ app = FastAPI()
 API_KEY_HEADER = "X-API-Key"
 api_key_header = APIKeyHeader(name=API_KEY_HEADER)
 
+#TODO: Make API keys be stored in a DB
 API_KEYS = set(os.getenv("API_KEYS", "").split(","))
 
 async def get_api_key(api_key: str = Depends(api_key_header)):
