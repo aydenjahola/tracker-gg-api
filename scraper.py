@@ -26,7 +26,7 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 }
 
-FLARESOLVERR_URL = "http://192.168.1.34:8191/v1"
+FLARESOLVERR_URL = "http://flaresolverr:8191/v1"
 
 async def fetch_player_stats(username: str, season: str = "current") -> Optional[PlayerStats]:
     url = f"{BASE_URL}/{quote(username)}/overview"
