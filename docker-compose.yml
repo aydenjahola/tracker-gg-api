@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: val-api
+    container_name: tracker-api
     environment:
       - ENVIRONMENT=production
       - API_KEYS=${API_KEYS}
