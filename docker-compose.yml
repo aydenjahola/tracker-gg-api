@@ -13,7 +13,7 @@ services:
       - flaresolverr
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.tracker-api.rule=Host(`val-api.aydenjahola.com`)"
+      - "traefik.http.routers.tracker-api.rule=Host(`tracker-api.aydenjahola.com`)"
       - "traefik.http.routers.tracker-api.entrypoints=https"
       - "traefik.http.services.tracker-api.loadbalancer.server.port=8000"
     networks:
