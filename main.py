@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import APIKeyHeader
-from scraper import fetch_player_stats
-from models import PlayerStats
+from scrapers.valorant_scraper import fetch_valorant_player_stats
+from scrapers.cs2_scraper import fetch_cs2_player_stats
+from models.valorant_model import ValorantPlayerStats
+from models.cs2_model import CS2PlayerStats
 import os
 from dotenv import load_dotenv
 
@@ -19,26 +21,25 @@ async def get_api_key(api_key: str = Depends(api_key_header)):
     if api_key not in API_KEYS:
         raise HTTPException(status_code=403, detail="Invalid API Key")
 
-@app.get("/player/{username}/current", response_model=PlayerStats)
-async def get_current_act_stats(username: str, api_key: str = Depends(get_api_key)):
-    """
-    Fetch the current act stats for a given Valorant player.
-    """
-    player_stats = await fetch_player_stats(username=username, season="current")
+@app.get("/valorant/player/{username}/current", response_model=ValorantPlayerStats)
+async def get_valorant_current_act_stats(username: str, api_key: str = Depends(get_api_key)):
+    player_stats = await fetch_valorant_player_stats(username=username, season="current")
     if player_stats is None:
         raise HTTPException(status_code=404, detail="Player stats not found.")
-    
     player_stats.season = "Current Act"
     return player_stats
 
-@app.get("/player/{username}/all", response_model=PlayerStats)
-async def get_all_seasons_stats(username: str, api_key: str = Depends(get_api_key)):
-    """
-    Fetch all seasons' stats for a given Valorant player.
-    """
-    player_stats = await fetch_player_stats(username=username, season="all")
+@app.get("/valorant/player/{username}/all", response_model=ValorantPlayerStats)
+async def get_valorant_all_seasons_stats(username: str, api_key: str = Depends(get_api_key)):
+    player_stats = await fetch_valorant_player_stats(username=username, season="all")
     if player_stats is None:
         raise HTTPException(status_code=404, detail="Player stats not found.")
-    
     player_stats.season = "All Acts"
+    return player_stats
+
+@app.get("/cs2/player/{steam_id}", response_model=CS2PlayerStats)
+async def get_cs2_stats(steam_id: str, api_key: str = Depends(get_api_key)):
+    player_stats = await fetch_cs2_player_stats(steam_id=steam_id)
+    if player_stats is None:
+        raise HTTPException(status_code=404, detail="Player stats not found.")
     return player_stats
