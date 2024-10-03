@@ -13,12 +13,9 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 }
 
+
 async def fetch_page_with_flaresolverr(url: str) -> str:
-    payload = {
-        "cmd": "request.get",
-        "url": url,
-        "maxTimeout": 60000
-    }
+    payload = {"cmd": "request.get", "url": url, "maxTimeout": 60000}
 
     async with aiohttp.ClientSession() as session:
         try:

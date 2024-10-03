@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
+
 class PlayerStats(BaseModel):
     username: str
     platform: str
