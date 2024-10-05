@@ -42,6 +42,22 @@ async def fetch_valorant_player_stats(
             level_text = level_div.find("span", class_="stat__value").text.strip()
             level = int(level_text) if level_text.isdigit() else None
 
+    # Peak Rank
+    peak_rank_section = soup.find(
+        "div", class_="rating-summary__content rating-summary__content--secondary"
+    )
+    peak_rank = "Unknown"
+    peak_rank_episode = "N/A"
+    if peak_rank_section:
+        peak_rank_info = peak_rank_section.find("div", class_="rating-entry__rank-info")
+        if peak_rank_info:
+            peak_rank_value = peak_rank_info.find("div", class_="value").text.strip()
+            peak_rank = f"{peak_rank_value}".strip()
+            episode_act_div = peak_rank_info.find("div", class_="subtext")
+            peak_rank_episode = (
+                episode_act_div.text.strip() if episode_act_div else "N/A"
+            )
+
     # Tracker Score
     tracker_score_section = soup.find("div", class_="performance-score__container")
     tracker_score = None
@@ -221,6 +237,7 @@ async def fetch_valorant_player_stats(
         platform="valorant",
         season="All",
         current_rank=current_rank,
+        peak_rank=peak_rank,
         level=level,
         tracker_score=tracker_score,
         round_win_percentage=round_win_percentage,
