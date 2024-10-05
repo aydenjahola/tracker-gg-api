@@ -24,23 +24,20 @@ async def fetch_valorant_player_stats(
 
     soup = BeautifulSoup(page_content, "html.parser")
 
-    # Current Rank and Level
+    # Current Rank
+    current_rank_section = soup.find("div", class_="rating-summary__content")
     current_rank = "Unknown"
-    level = None
-    rating_section = soup.find("div", class_="trn-profile-highlighted-content__stats")
-    if rating_section:
-        rank_img = rating_section.find(
-            "img", class_="trn-profile-highlighted-content__icon"
-        )
-        if rank_img:
-            current_rank = rank_img.get("alt", "Unknown").strip()
-        level_div = rating_section.find("div", class_="stat")
-        if (
-            level_div
-            and level_div.find("span", class_="stat__label").text.strip() == "Level"
-        ):
-            level_text = level_div.find("span", class_="stat__value").text.strip()
-            level = int(level_text) if level_text.isdigit() else None
+    if current_rank_section:
+        rank_info = current_rank_section.find("div", class_="rating-entry__rank-info")
+        if rank_info:
+            current_rank_label = rank_info.find("div", class_="label").text.strip()
+            current_rank_value = rank_info.find("div", class_="value").text.strip()
+            current_rank_rr = rank_info.find("span", class_="mmr")
+            current_rank = (
+                f"{current_rank_label} {current_rank_value}".strip()
+                if current_rank_rr
+                else current_rank_value
+            )
 
     # Peak Rank
     peak_rank_section = soup.find(
@@ -51,26 +48,29 @@ async def fetch_valorant_player_stats(
     if peak_rank_section:
         peak_rank_info = peak_rank_section.find("div", class_="rating-entry__rank-info")
         if peak_rank_info:
-            peak_rank_value = peak_rank_info.find("div", class_="value").text.strip()
-            peak_rank = f"{peak_rank_value}".strip()
+            peak_rank_value = peak_rank_info.find("div", class_="value").text.replace(",", " ").strip()
+            peak_rank = f"{peak_rank_value}".replace(",", " ").strip()
             episode_act_div = peak_rank_info.find("div", class_="subtext")
             peak_rank_episode = (
-                episode_act_div.text.strip() if episode_act_div else "N/A"
+                episode_act_div.text.replace(",", " ").strip() if episode_act_div else "N/A"
             )
 
     # Tracker Score
-    tracker_score_section = soup.find("div", class_="performance-score__container")
+    # Tracker Score
+    tracker_score_section = soup.find("div", class_="score__text")
     tracker_score = None
-    round_win_percentage = None
     if tracker_score_section:
-        score_value = tracker_score_section.find("div", class_="value")
-        if score_value:
-            tracker_score_text = score_value.text.strip().split("/")[0]
-            tracker_score = (
-                int(tracker_score_text) if tracker_score_text.isdigit() else None
-            )
+        tracker_score_value = tracker_score_section.find("div", class_="value")
+        tracker_score_text = (
+            tracker_score_value.text.strip().split()[0] if tracker_score_value else ""
+        )
+        tracker_score = (
+            int(tracker_score_text) if tracker_score_text.isdigit() else None
+        )
         # Round Win %
-        stats = tracker_score_section.find_all("div", class_="stat")
+        round_win_percentage = None
+        tracker_win_percentage_section = soup.find("div", class_="performance-score__container")
+        stats = tracker_win_percentage_section.find_all("div", class_="stat")
         for stat in stats:
             label = stat.find("div", class_="stat__label").text.strip()
             value = stat.find("div", class_="stat__value").text.strip().replace("%", "")
@@ -198,9 +198,7 @@ async def fetch_valorant_player_stats(
             role_stats = role_div.find("div", class_="role__stats")
             if role_stats:
                 # Win rate
-                win_rate_text = role_stats.find(
-                    "span", class_="role__value"
-                ).text.strip()
+                win_rate_text = role_stats.find("span", class_="role__value").text.strip()
                 win_rate = win_rate_text.replace("%", "").split(" ")[1]
 
                 # Wins and Losses
@@ -208,16 +206,19 @@ async def fetch_valorant_player_stats(
                 wins, losses = map(int, re.findall(r"\d+", win_loss_text))
 
                 # KDA
-                kda_text = role_stats.find_all("span", class_="role__value")[
-                    1
-                ].text.strip()
+                kda_text = role_stats.find_all("span", class_="role__value")[1].text.strip()
                 kda = float(kda_text.split(" ")[1])
 
                 # Kills, Deaths, and Assists
-                kd_stats = role_stats.find_all("span", class_="role__sub")[
-                    1
-                ].text.strip()
-                kills, deaths, assists = map(int, re.findall(r"\d+", kd_stats))
+                kd_stats = role_stats.find_all("span", class_="role__sub")[1].text.strip()
+
+                # Extract the numbers using regex
+                kd_values = re.findall(r"\d{1,3}(?:,\d{3})*", kd_stats)  # This will match numbers like 1,234 or 123
+
+                # Convert to integers, removing commas
+                kills = int(kd_values[0].replace(',', '')) if len(kd_values) > 0 else 0
+                deaths = int(kd_values[1].replace(',', '')) if len(kd_values) > 1 else 0
+                assists = int(kd_values[2].replace(',', '')) if len(kd_values) > 2 else 0
 
                 roles.append(
                     Role(
@@ -232,13 +233,14 @@ async def fetch_valorant_player_stats(
                     )
                 )
 
+
     return ValorantPlayerStats(
         username=username,
         platform="valorant",
         season="All",
         current_rank=current_rank,
         peak_rank=peak_rank,
-        level=level,
+        peak_rank_episode=peak_rank_episode,
         tracker_score=tracker_score,
         round_win_percentage=round_win_percentage,
         playtime_hours=playtime_hours,

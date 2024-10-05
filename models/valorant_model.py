@@ -33,8 +33,7 @@ class ValorantPlayerStats(BaseModel):
     season: Optional[str] = None
     current_rank: Optional[str] = None
     peak_rank: Optional[str] = None
-    level: Optional[int] = None
-    rating: Optional[str] = None
+    peak_rank_episode: Optional[str] = None
     wins: Optional[int] = None
     matches_played: Optional[int] = None
     playtime_hours: Optional[float] = None
