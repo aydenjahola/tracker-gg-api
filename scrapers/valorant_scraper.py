@@ -56,7 +56,6 @@ async def fetch_valorant_player_stats(
             )
 
     # Tracker Score
-    # Tracker Score
     tracker_score_section = soup.find("div", class_="score__text")
     tracker_score = None
     if tracker_score_section:
@@ -67,15 +66,17 @@ async def fetch_valorant_player_stats(
         tracker_score = (
             int(tracker_score_text) if tracker_score_text.isdigit() else None
         )
-        # Round Win %
-        round_win_percentage = None
-        tracker_win_percentage_section = soup.find("div", class_="performance-score__container")
+        
+    # Round Win %
+    round_win_percentage = None
+    tracker_win_percentage_section = soup.find("div", class_="performance-score__container")
+    if tracker_win_percentage_section:
         stats = tracker_win_percentage_section.find_all("div", class_="stat")
         for stat in stats:
             label = stat.find("div", class_="stat__label").text.strip()
             value = stat.find("div", class_="stat__value").text.strip().replace("%", "")
             if label == "Round Win %":
-                round_win_percentage = float(value)
+                round_win_percentage = float(value) if value else None
 
     # Playtime and Matches Played
     title_stats = soup.find("div", class_="title-stats")
@@ -203,7 +204,7 @@ async def fetch_valorant_player_stats(
 
                 # Wins and Losses
                 win_loss_text = role_stats.find("span", class_="role__sub").text.strip()
-                wins, losses = map(int, re.findall(r"\d+", win_loss_text))
+                wins, losses = map(int, re.findall(r"(\d+)W.*?(\d+)L", win_loss_text)[0])
 
                 # KDA
                 kda_text = role_stats.find_all("span", class_="role__value")[1].text.strip()
