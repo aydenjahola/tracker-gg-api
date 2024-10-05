@@ -21,6 +21,11 @@ async def fetch_cs2_player_stats(
 
     soup = BeautifulSoup(page_content, "html.parser")
 
+    # Player name
+    name_section = soup.find("span", class_="trn-ign__username")
+    player_name = name_section.text.strip() if name_section else "Unknown Player"
+
+    # Current Rank
     # Check if it's the competitive playlist and scrape accordingly
     if playlist == "competitive":
         # For competitive, there's no current rank, but instead the "Highest Rating"
@@ -170,6 +175,7 @@ async def fetch_cs2_player_stats(
     return CS2PlayerStats(
         steam_id=steam_id,
         platform="cs2",
+        player_name=player_name,
         current_rank=f"{current_rating_label}",
         peak_rank=f"{peak_rating_label} ({peak_tier})",
         kd_ratio=float(kd_ratio) if kd_ratio.replace(".", "", 1).isdigit() else 0.0,

@@ -5,6 +5,7 @@ from typing import Optional
 class CS2PlayerStats(BaseModel):
     steam_id: str
     platform: str
+    player_name: Optional[str] = None
     current_rank: Optional[str] = None
     peak_rank: Optional[str] = None
     kd_ratio: Optional[float] = None
