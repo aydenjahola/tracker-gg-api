@@ -54,9 +54,19 @@ async def get_valorant_all_seasons_stats(
     return player_stats
 
 
-@app.get("/cs2/player/{steam_id}", response_model=CS2PlayerStats)
-async def get_cs2_stats(steam_id: str, api_key: str = Depends(get_api_key)):
-    player_stats = await fetch_cs2_player_stats(steam_id=steam_id)
+@app.get("/cs2/player/{steam_id}/premier", response_model=CS2PlayerStats)
+async def get_cs2_premier_stats(steam_id: str, api_key: str = Depends(get_api_key)):
+    player_stats = await fetch_cs2_player_stats(steam_id=steam_id, playlist="premier")
+    if player_stats is None:
+        raise HTTPException(status_code=404, detail="Player stats not found.")
+    return player_stats
+
+
+@app.get("/cs2/player/{steam_id}/competitive", response_model=CS2PlayerStats)
+async def get_cs2_competitive_stats(steam_id: str, api_key: str = Depends(get_api_key)):
+    player_stats = await fetch_cs2_player_stats(
+        steam_id=steam_id, playlist="competitive"
+    )
     if player_stats is None:
         raise HTTPException(status_code=404, detail="Player stats not found.")
     return player_stats

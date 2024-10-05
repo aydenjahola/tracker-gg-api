@@ -7,8 +7,11 @@ from flaresolverr_client import fetch_page_with_flaresolverr
 CS2_BASE_URL = "https://tracker.gg/cs2/profile/steam"
 
 
-async def fetch_cs2_player_stats(steam_id: str) -> Optional[CS2PlayerStats]:
-    url = f"{CS2_BASE_URL}/{quote(steam_id)}/overview?playlist=premier"
+async def fetch_cs2_player_stats(
+    steam_id: str, playlist: str = "premier"
+) -> Optional[CS2PlayerStats]:
+    playlist_url = f"?playlist={playlist}"
+    url = f"{CS2_BASE_URL}/{quote(steam_id)}/overview{playlist_url}"
 
     page_content = await fetch_page_with_flaresolverr(url)
 
@@ -18,26 +21,44 @@ async def fetch_cs2_player_stats(steam_id: str) -> Optional[CS2PlayerStats]:
 
     soup = BeautifulSoup(page_content, "html.parser")
 
-    # Current Rank
-    current_rank_header = soup.find(
-        "h3", class_="trn-card__title", text="Current Rating"
-    )
-    if current_rank_header:
-        current_rank_div = current_rank_header.find_parent("div", class_="trn-card")
-        if current_rank_div:
-            current_rating_label = current_rank_div.find(
-                "label", class_="rating-emblem__label"
+    # Check if it's the competitive playlist and scrape accordingly
+    if playlist == "competitive":
+        # For competitive, there's no current rank, but instead the "Highest Rating"
+        highest_rank_section = soup.find(
+            "div", class_="trn-profile-highlighted-content__stats"
+        )
+        if highest_rank_section:
+            highest_rank_label = highest_rank_section.find("span", class_="stat__value")
+            highest_rating_label = (
+                highest_rank_label.text.strip()
+                if highest_rank_label
+                else "Highest rank not found"
             )
-            if current_rating_label:
-                current_rating_label = current_rating_label.text.replace(
-                    ",", ""
-                ).strip()
-            else:
-                current_rating_label = "Label not found"
         else:
-            current_rating_label = "Current rank div not found"
+            highest_rating_label = "Highest rank section not found"
+
+        current_rating_label = highest_rating_label  # Use the highest rating as the current rank in competitive
     else:
-        current_rating_label = "Current rank header not found"
+        # Premier rank
+        current_rank_header = soup.find(
+            "h3", class_="trn-card__title", text="Current Rating"
+        )
+        if current_rank_header:
+            current_rank_div = current_rank_header.find_parent("div", class_="trn-card")
+            if current_rank_div:
+                current_rating_label = current_rank_div.find(
+                    "label", class_="rating-emblem__label"
+                )
+                if current_rating_label:
+                    current_rating_label = current_rating_label.text.replace(
+                        ",", ""
+                    ).strip()
+                else:
+                    current_rating_label = "Label not found"
+            else:
+                current_rating_label = "Current rank div not found"
+        else:
+            current_rating_label = "Current rank header not found"
 
     # Peak Rank
     peak_rank_header = soup.find(
