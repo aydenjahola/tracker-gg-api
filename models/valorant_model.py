@@ -14,6 +14,7 @@ class MapStats(BaseModel):
     map_name: str
     map_win_percentage: str
     map_matches: str
+    map_image_url: str
 
 
 class Role(BaseModel):

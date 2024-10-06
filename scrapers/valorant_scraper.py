@@ -94,7 +94,7 @@ async def fetch_valorant_player_stats(
         else "0"
     )
     matches_played = matches.replace(",", "")
-    
+
     # Hours Played
     playtime_section = soup.find("span", class_="playtime")
     playtime_hours = "0.0"
@@ -126,12 +126,10 @@ async def fetch_valorant_player_stats(
         wins_value = wins_section.find_next("span", class_="value")
         if wins_value:
             wins = wins_value.text.strip().replace(",", "")
-            print(f"Wins found: {wins}")
+
         else:
-            print("Wins value not found.")
             wins = "0"
     else:
-        print("Wins section not found.")
         wins = "0"
 
     # K/D Ratio
@@ -244,17 +242,28 @@ async def fetch_valorant_player_stats(
         for map_div in map_divs:
             name_div = map_div.find("div", class_="name")
             info_div = map_div.find("div", class_="info")
+
             if name_div and info_div:
                 map_name = name_div.text.strip()
                 map_win_percentage = (
                     info_div.find("div", class_="value").text.replace("%", "").strip()
                 )
                 map_matches = info_div.find("div", class_="label").text.strip()
+
+                # Extract the image URL from the style attribute
+                style = map_div.get("style")
+                map_image_url = None
+                if style:
+                    match = re.search(r"url\('([^']+)'\)", style)
+                    if match:
+                        map_image_url = match.group(1)
+
                 top_maps.append(
                     MapStats(
                         map_name=map_name,
                         map_win_percentage=map_win_percentage,
                         map_matches=map_matches,
+                        map_image_url=map_image_url,  # Added image URL
                     )
                 )
 
