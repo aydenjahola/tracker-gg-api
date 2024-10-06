@@ -86,23 +86,25 @@ async def fetch_valorant_player_stats(
             if label == "Round Win %":
                 round_win_percentage = float(value) if value else None
 
-    # Playtime and Matches Played
-    title_stats = soup.find("div", class_="title-stats")
-    playtime_hours = 0.0
-    matches_played = 0
-    if title_stats:
-        playtime_span = title_stats.find("span", class_="playtime")
-        if playtime_span:
-            playtime_text = playtime_span.text.strip()
-            match = re.search(r"([\d\.]+)h", playtime_text)
-            if match:
-                playtime_hours = float(match.group(1))
-        matches_span = title_stats.find("span", class_="matches")
-        if matches_span:
-            matches_text = matches_span.text.strip()
-            match = re.search(r"(\d+)", matches_text)
-            if match:
-                matches_played = int(match.group(1))
+    # Matches Played
+    matches_section = soup.find("span", class_="matches")
+    matches = (
+        matches_section.text.strip().replace("Matches", "").strip()
+        if matches_section
+        else "0"
+    )
+    matches_played = matches.replace(",", "")
+    
+    # Hours Played
+    playtime_section = soup.find("span", class_="playtime")
+    playtime_hours = "0.0"
+    if playtime_section:
+        hours_played_text = playtime_section.text.strip()
+        playtime_hours = (
+            hours_played_text.split("h")[0].strip().replace(",", "")
+            if "h" in hours_played_text
+            else "0.0"
+        )
 
     # Main Stats
     stats_sections = soup.find_all("div", class_="stat")
