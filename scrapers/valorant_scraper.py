@@ -27,6 +27,7 @@ async def fetch_valorant_player_stats(
     # Current Rank
     current_rank_section = soup.find("div", class_="rating-summary__content")
     current_rank = "Unknown"
+    current_rank_image_url = None
     if current_rank_section:
         rank_info = current_rank_section.find("div", class_="rating-entry__rank-info")
         if rank_info:
@@ -39,12 +40,17 @@ async def fetch_valorant_player_stats(
                 else current_rank_value
             )
 
+            # Extract the current rank image URL
+            rank_image = current_rank_section.find("img")
+            current_rank_image_url = rank_image["src"] if rank_image else None
+
     # Peak Rank
     peak_rank_section = soup.find(
         "div", class_="rating-summary__content rating-summary__content--secondary"
     )
     peak_rank = "Unknown"
     peak_rank_episode = "N/A"
+    peak_rank_image_url = None
     if peak_rank_section:
         peak_rank_info = peak_rank_section.find("div", class_="rating-entry__rank-info")
         if peak_rank_info:
@@ -60,6 +66,10 @@ async def fetch_valorant_player_stats(
                 if episode_act_div
                 else "N/A"
             )
+
+            # Extract the peak rank image URL
+            rank_image = peak_rank_section.find("img")
+            peak_rank_image_url = rank_image["src"] if rank_image else None
 
     # Tracker Score
     tracker_score_section = soup.find("div", class_="score__text")
@@ -341,7 +351,9 @@ async def fetch_valorant_player_stats(
         platform="valorant",
         season="All",
         current_rank=current_rank,
+        current_rank_image_url=current_rank_image_url,
         peak_rank=peak_rank,
+        peak_rank_image_url=peak_rank_image_url,
         peak_rank_episode=peak_rank_episode,
         tracker_score=tracker_score,
         round_win_percentage=round_win_percentage,

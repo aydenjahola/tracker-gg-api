@@ -34,7 +34,9 @@ class ValorantPlayerStats(BaseModel):
     platform: str
     season: Optional[str] = None
     current_rank: Optional[str] = None
+    current_rank_image_url: Optional[str] = None
     peak_rank: Optional[str] = None
+    peak_rank_image_url: Optional[str] = None
     peak_rank_episode: Optional[str] = None
     wins: Optional[int] = None
     matches_played: Optional[int] = None
