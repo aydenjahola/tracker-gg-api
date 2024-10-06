@@ -26,6 +26,7 @@ class Role(BaseModel):
     role_kills: int
     role_deaths: int
     role_assists: int
+    role_image_url: str
 
 
 class ValorantPlayerStats(BaseModel):

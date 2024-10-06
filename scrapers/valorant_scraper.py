@@ -274,6 +274,13 @@ async def fetch_valorant_player_stats(
         role_divs = roles_section.find_all("div", class_="role")
         for role_div in role_divs:
             role_name = role_div.find("h5", class_="role__name").text.strip()
+
+            # Extract the role image URL
+            role_image_tag = role_div.find("img", class_="icon")
+            role_image_url = (
+                role_image_tag["src"] if role_image_tag else None
+            )  # Get image URL
+
             role_stats = role_div.find("div", class_="role__stats")
             if role_stats:
                 # Win rate
@@ -325,6 +332,7 @@ async def fetch_valorant_player_stats(
                         role_kills=role_kills,
                         role_deaths=role_deaths,
                         role_assists=role_assists,
+                        role_image_url=role_image_url,
                     )
                 )
 
