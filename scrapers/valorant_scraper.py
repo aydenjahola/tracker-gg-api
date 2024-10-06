@@ -48,11 +48,17 @@ async def fetch_valorant_player_stats(
     if peak_rank_section:
         peak_rank_info = peak_rank_section.find("div", class_="rating-entry__rank-info")
         if peak_rank_info:
-            peak_rank_value = peak_rank_info.find("div", class_="value").text.replace(",", " ").strip()
+            peak_rank_value = (
+                peak_rank_info.find("div", class_="value")
+                .text.replace(",", " ")
+                .strip()
+            )
             peak_rank = f"{peak_rank_value}".replace(",", " ").strip()
             episode_act_div = peak_rank_info.find("div", class_="subtext")
             peak_rank_episode = (
-                episode_act_div.text.replace(",", " ").strip() if episode_act_div else "N/A"
+                episode_act_div.text.replace(",", " ").strip()
+                if episode_act_div
+                else "N/A"
             )
 
     # Tracker Score
@@ -66,10 +72,12 @@ async def fetch_valorant_player_stats(
         tracker_score = (
             int(tracker_score_text) if tracker_score_text.isdigit() else None
         )
-        
+
     # Round Win %
     round_win_percentage = None
-    tracker_win_percentage_section = soup.find("div", class_="performance-score__container")
+    tracker_win_percentage_section = soup.find(
+        "div", class_="performance-score__container"
+    )
     if tracker_win_percentage_section:
         stats = tracker_win_percentage_section.find_all("div", class_="stat")
         for stat in stats:
@@ -109,18 +117,75 @@ async def fetch_valorant_player_stats(
             value_text = value_span.text.strip().replace("%", "").replace(",", "")
             stats_dict[stat_name] = value_text
 
+    # Wins
+    wins_section = soup.find("span", string=re.compile(r"\bWins\b", re.IGNORECASE))
+
+    if wins_section:
+        wins_value = wins_section.find_next("span", class_="value")
+        if wins_value:
+            wins = wins_value.text.strip().replace(",", "")
+            print(f"Wins found: {wins}")
+        else:
+            print("Wins value not found.")
+            wins = "0"
+    else:
+        print("Wins section not found.")
+        wins = "0"
+
+    # K/D Ratio
+    kd_ratio_section = soup.find("span", title="K/D Ratio")
+    kd_ratio = (
+        kd_ratio_section.find_next("span", class_="value").text.strip()
+        if kd_ratio_section
+        else "0"
+    )
+
+    # Kills
+    kills_section = soup.find("span", title="Kills")
+    if kills_section:
+        kills_value = kills_section.find_parent("div", class_="numbers").find(
+            "span", class_="value"
+        )
+        kills = kills_value.text.strip().replace(",", "") if kills_value else "0"
+    else:
+        kills = "0"
+
+    # Headshot Percentage
+    headshot_section = soup.find("span", title="Headshot %")
+    headshot_percentage = (
+        headshot_section.find_next("span", class_="value")
+        .text.strip()
+        .replace("%", "")
+        .strip()
+        if headshot_section
+        else "0.0"
+    )
+
+    # Win Percentage
+    win_section = soup.find("span", title="Win %")
+    win_percentage = (
+        win_section.find_next("span", class_="value")
+        .text.strip()
+        .replace("%", "")
+        .strip()
+        if win_section
+        else "0.0"
+    )
+
+    # ACS (Average Combat Score)
+    acs_section = soup.find("span", title="ACS")
+    acs_value = (
+        acs_section.find_next("span", class_="value").text.strip()
+        if acs_section
+        else "0.0"
+    )
+
     # Extract individual stats
     damage_per_round = float(stats_dict.get("Damage/Round", 0.0))
-    kd_ratio = float(stats_dict.get("K/D Ratio", 0.0))
-    headshot_percentage = float(stats_dict.get("Headshot %", 0.0))
-    win_percentage = float(stats_dict.get("Win %", 0.0))
-    wins = int(stats_dict.get("Wins", 0))
     kast = float(stats_dict.get("KAST", 0.0))
     ddr_per_round = float(stats_dict.get("DDΔ/Round", 0.0))
-    kills = int(stats_dict.get("Kills", 0))
     deaths = int(stats_dict.get("Deaths", 0))
     assists = int(stats_dict.get("Assists", 0))
-    acs = float(stats_dict.get("ACS", 0.0))
     kad_ratio = float(stats_dict.get("KAD Ratio", 0.0))
     kills_per_round = float(stats_dict.get("Kills/Round", 0.0))
     first_bloods = int(stats_dict.get("First Bloods", 0))
@@ -148,12 +213,12 @@ async def fetch_valorant_player_stats(
             ):
                 weapon_name = name_div.text.strip()
                 weapon_type = type_div.text.strip()
-                silhouette_url = silhouette_img["src"]
-                accuracy = [
+                weapon_silhouette_url = silhouette_img["src"]
+                weapon_accuracy = [
                     stat.text.strip()
                     for stat in accuracy_hits_div.find_all("span", class_="stat")
                 ]
-                kills = int(
+                weapon_kills = int(
                     main_stat_div.find("span", class_="value")
                     .text.replace(",", "")
                     .strip()
@@ -161,11 +226,11 @@ async def fetch_valorant_player_stats(
 
                 top_weapons.append(
                     Weapon(
-                        name=weapon_name,
+                        weapon_name=weapon_name,
                         weapon_type=weapon_type,
-                        silhouette_url=silhouette_url,
-                        accuracy=accuracy,
-                        kills=kills,
+                        weapon_silhouette_url=weapon_silhouette_url,
+                        weapon_accuracy=weapon_accuracy,
+                        weapon_kills=weapon_kills,
                     )
                 )
 
@@ -179,13 +244,15 @@ async def fetch_valorant_player_stats(
             info_div = map_div.find("div", class_="info")
             if name_div and info_div:
                 map_name = name_div.text.strip()
-                win_percentage = (
+                map_win_percentage = (
                     info_div.find("div", class_="value").text.replace("%", "").strip()
                 )
-                matches = info_div.find("div", class_="label").text.strip()
+                map_matches = info_div.find("div", class_="label").text.strip()
                 top_maps.append(
                     MapStats(
-                        name=map_name, win_percentage=win_percentage, matches=matches
+                        map_name=map_name,
+                        map_win_percentage=map_win_percentage,
+                        map_matches=map_matches,
                     )
                 )
 
@@ -199,41 +266,56 @@ async def fetch_valorant_player_stats(
             role_stats = role_div.find("div", class_="role__stats")
             if role_stats:
                 # Win rate
-                win_rate_text = role_stats.find("span", class_="role__value").text.strip()
-                win_rate = win_rate_text.replace("%", "").split(" ")[1]
+                win_rate_text = role_stats.find(
+                    "span", class_="role__value"
+                ).text.strip()
+                role_win_rate = win_rate_text.replace("%", "").split(" ")[1]
 
                 # Wins and Losses
                 win_loss_text = role_stats.find("span", class_="role__sub").text.strip()
-                wins, losses = map(int, re.findall(r"(\d+)W.*?(\d+)L", win_loss_text)[0])
+                role_wins, role_losses = map(
+                    int, re.findall(r"(\d+)W.*?(\d+)L", win_loss_text)[0]
+                )
 
                 # KDA
-                kda_text = role_stats.find_all("span", class_="role__value")[1].text.strip()
-                kda = float(kda_text.split(" ")[1])
+                kda_text = role_stats.find_all("span", class_="role__value")[
+                    1
+                ].text.strip()
+                role_kda = float(kda_text.split(" ")[1])
 
                 # Kills, Deaths, and Assists
-                kd_stats = role_stats.find_all("span", class_="role__sub")[1].text.strip()
+                kd_stats = role_stats.find_all("span", class_="role__sub")[
+                    1
+                ].text.strip()
 
                 # Extract the numbers using regex
-                kd_values = re.findall(r"\d{1,3}(?:,\d{3})*", kd_stats)  # This will match numbers like 1,234 or 123
+                kd_values = re.findall(
+                    r"\d{1,3}(?:,\d{3})*", kd_stats
+                )  # This will match numbers like 1,234 or 123
 
                 # Convert to integers, removing commas
-                kills = int(kd_values[0].replace(',', '')) if len(kd_values) > 0 else 0
-                deaths = int(kd_values[1].replace(',', '')) if len(kd_values) > 1 else 0
-                assists = int(kd_values[2].replace(',', '')) if len(kd_values) > 2 else 0
+                role_kills = (
+                    int(kd_values[0].replace(",", "")) if len(kd_values) > 0 else 0
+                )
+                role_deaths = (
+                    int(kd_values[1].replace(",", "")) if len(kd_values) > 1 else 0
+                )
+                role_assists = (
+                    int(kd_values[2].replace(",", "")) if len(kd_values) > 2 else 0
+                )
 
                 roles.append(
                     Role(
-                        name=role_name,
-                        win_rate=win_rate,
-                        wins=wins,
-                        losses=losses,
-                        kda=kda,
-                        kills=kills,
-                        deaths=deaths,
-                        assists=assists,
+                        role_name=role_name,
+                        role_win_rate=role_win_rate,
+                        role_wins=role_wins,
+                        role_losses=role_losses,
+                        role_kda=role_kda,
+                        role_kills=role_kills,
+                        role_deaths=role_deaths,
+                        role_assists=role_assists,
                     )
                 )
-
 
     return ValorantPlayerStats(
         username=username,
@@ -256,7 +338,7 @@ async def fetch_valorant_player_stats(
         kills=kills,
         deaths=deaths,
         assists=assists,
-        acs=acs,
+        acs=acs_value,
         kad_ratio=kad_ratio,
         kills_per_round=kills_per_round,
         first_bloods=first_bloods,

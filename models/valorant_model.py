@@ -3,28 +3,28 @@ from typing import Optional, List
 
 
 class Weapon(BaseModel):
-    name: str
+    weapon_name: str
     weapon_type: str
-    silhouette_url: str
-    accuracy: List[str]
-    kills: int
+    weapon_silhouette_url: str
+    weapon_accuracy: List[str]
+    weapon_kills: int
 
 
 class MapStats(BaseModel):
-    name: str
-    win_percentage: str
-    matches: str
+    map_name: str
+    map_win_percentage: str
+    map_matches: str
 
 
 class Role(BaseModel):
-    name: str
-    win_rate: str
-    kda: float
-    wins: int
-    losses: int
-    kills: int
-    deaths: int
-    assists: int
+    role_name: str
+    role_win_rate: str
+    role_kda: float
+    role_wins: int
+    role_losses: int
+    role_kills: int
+    role_deaths: int
+    role_assists: int
 
 
 class ValorantPlayerStats(BaseModel):
