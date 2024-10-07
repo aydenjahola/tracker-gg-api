@@ -12,6 +12,8 @@ class CS2PlayerStats(BaseModel):
     hours_played: Optional[float] = None
 
     # All the additional stats fields
+    total_matches_played: Optional[int] = None
+    total_gg_matches_played: Optional[int] = None
     total_time_played: Optional[int] = None
     total_planted_bombs: Optional[int] = None
     total_defused_bombs: Optional[int] = None
