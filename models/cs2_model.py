@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 
+
 class CS2PlayerStats(BaseModel):
     steam_id: str
     platform: str
