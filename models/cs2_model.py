@@ -30,6 +30,7 @@ class CS2PlayerStats(BaseModel):
     total_kills_p90: Optional[int] = None
     total_kills_awp: Optional[int] = None
     total_kills_ak47: Optional[int] = None
+    total_kills_m4a1: Optional[int] = None
     total_kills_aug: Optional[int] = None
     total_kills_famas: Optional[int] = None
     total_kills_g3sg1: Optional[int] = None
