@@ -1,6 +1,6 @@
-# Valorant Player Stats API
+# Tracker Player Stats API
 
-This API allows you to fetch statistics for Valorant players, including current and all-time statistics. The API is built using FastAPI and utilizes web scraping to gather player data from [Tracker.gg](https://tracker.gg/).
+This API allows you to fetch statistics for Valorant, CS2 and TFT players, including current and all-time statistics. The API is built using FastAPI and utilizes web scraping to gather player data from [Tracker.gg](https://tracker.gg/).
 
 ## Table of Contents
 
@@ -10,8 +10,11 @@ This API allows you to fetch statistics for Valorant players, including current 
   - [Installation](#installation)
   - [Environment Variables](#environment-variables)
 - [API Endpoints](#api-endpoints)
-  - [Get Current Act Stats](#get-current-act-stats)
-  - [Get All Seasons Stats](#get-all-seasons-stats)
+  - [Valorant](#Valorant)
+    - [Get Current Act Stats](#get-current-act-stats)
+    - [Get All Seasons Stats](#get-all-seasons-stats)
+  - [CS2](#cs2)
+    - [Gel All Time Player's Stats](#get-all-time-player-stats)
 - [Response Model](#response-model)
 - [Error Handling](#error-handling)
 - [License](#license)
@@ -20,6 +23,7 @@ This API allows you to fetch statistics for Valorant players, including current 
 
 - Fetch current act statistics for a given Valorant player.
 - Fetch all-time statistics across seasons for a given Valorant player.
+- Fetch all player's statistics for CS2
 - API key authentication for secure access.
 
 ## Getting Started
@@ -27,7 +31,6 @@ This API allows you to fetch statistics for Valorant players, including current 
 ### Prerequisites
 
 - Python 3.7 or higher
-- An active internet connection
 
 ### Installation
 
@@ -35,10 +38,23 @@ This API allows you to fetch statistics for Valorant players, including current 
 
 ```bash
 git@github.com:aydenjahola/tracker-gg-api.git
-cd valorant-stats-api
+cd tracker-gg-api.git
 ```
 
-2. Install the required packages:
+2. Create virtual environment
+
+```bash
+python3 -m venv vevn
+```
+
+3. Actiave the virtual environemnt
+
+```bash
+source venv/bin/activate # For Linux
+source venv/Scripts/Actiave # For Windows
+```
+
+4. Install the required packages:
 
 ```bash
 pip install -r requirements.txt
@@ -49,16 +65,20 @@ pip install -r requirements.txt
 Create a `.env` file in the root of the project directory and add your API keys:
 
 ```env
-API_KEYS=your_api_key1,your_api_key2
+API_KEYS=your_api_key,your_api_key2 # Create a new key using the openssl command
+STEAM_API_KEY=your_steam_api_key
+FLARESOLVERR_URL=your_flare_solver_url
 ```
 
 Make sure to replace `your_api_key1,your_api_key2` with your actual API keys.
 
 ## API Endpoints
 
-### Get Current Act Stats
+### Valorant
 
-**Endpoint:** `GET /player/{username}/current`
+#### Get Current Act Stats
+
+**Endpoint:** `GET /valorant/player/{username}/current`
 
 **Description:** Fetch the current act statistics for a given Valorant player.
 
@@ -67,29 +87,9 @@ Make sure to replace `your_api_key1,your_api_key2` with your actual API keys.
 - `username`: The Riot username of the player (eg. Shitter#1234).
 - `X-API-Key`: Your API key (header).
 
-**Response:**
+#### Get All Seasons Stats
 
-```json
-{
-  "username": "player_username",
-  "platform": "valorant",
-  "season": "Current Act",
-  "kills": 150,
-  "wins": 75,
-  "matches_played": 100,
-  "kd_ratio": 1.5,
-  "current_rank": "Gold",
-  "peak_rank": "Platinum",
-  "headshot_percentage": 30.0,
-  "win_percentage": 75.0,
-  "hours_played": 50.0,
-  "tracker_score": 1000
-}
-```
-
-### Get All Seasons Stats
-
-**Endpoint:** `GET /player/{username}/all`
+**Endpoint:** `GET /valorant/player/{username}/all`
 
 **Description:** Fetch all seasons' statistics for a given Valorant player.
 
@@ -98,30 +98,18 @@ Make sure to replace `your_api_key1,your_api_key2` with your actual API keys.
 - `username`: The Riot username of the player (eg. Shitter#1234).
 - `X-API-Key`: Your API key (header).
 
-**Response:**
+### CS2
 
-Similar to the "Get Current Act Stats" response, but the `season` field will be set to `"All Acts"`.
+#### Get All Time Player Stats
 
-## Response Model
+**Endpoint:** `GET /cs2/player/{steam_id}`
 
-The response for both endpoints follows the `PlayerStats` model, defined as:
+**Description:** Fetch all player's stats for CS2.
 
-```python
-class PlayerStats(BaseModel):
-    username: str
-    platform: str
-    season: Optional[str] = None
-    kills: Optional[int] = None
-    wins: Optional[int] = None
-    matches_played: Optional[int] = None
-    kd_ratio: Optional[float] = None
-    current_rank: Optional[str] = None
-    peak_rank: Optional[str] = None
-    headshot_percentage: Optional[float] = None
-    win_percentage: Optional[float] = None
-    hours_played: Optional[float] = None
-    tracker_score: Optional[int] = None
-```
+**Parameters:**
+
+- `username`: The steam id of the player.
+- `X-API-Key`: Your API key (header).
 
 ## Error Handling
 
