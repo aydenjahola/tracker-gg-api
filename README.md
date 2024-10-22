@@ -1,4 +1,4 @@
-# Tracker Player Stats API
+# Tracker.gg Stats API
 
 This API allows you to fetch statistics for Valorant, CS2 and TFT players, including current and all-time statistics. The API is built using FastAPI and utilizes web scraping to gather player data from [Tracker.gg](https://tracker.gg/).
 
@@ -108,7 +108,7 @@ Make sure to replace `your_api_key1,your_api_key2` with your actual API keys.
 
 **Parameters:**
 
-- `username`: The steam id of the player.
+- `steamid`: The steam id of the player.
 - `X-API-Key`: Your API key (header).
 
 ## Error Handling
