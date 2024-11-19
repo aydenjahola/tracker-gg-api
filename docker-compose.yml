@@ -24,7 +24,7 @@ services:
 
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: flaresolverr
+    container_name: tracker-api-flaresolverr
     ports:
       - "${PORT:-8191}:8191"
     environment:
@@ -37,7 +37,7 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: redis
+    container_name: tracker-api-redis
     ports:
       - "6379:6379"
     restart: unless-stopped
