@@ -47,6 +47,8 @@ services:
     restart: unless-stopped
     networks:
       - internal
+    volumes:
+      - ~/homelab-data/tracker-api/postgresql/:/var/lib/postgresql/data
 
   redis:
     image: redis:alpine
