@@ -78,8 +78,6 @@ async def lifespan(app: FastAPI):
     """
     Context manager to manage app lifecycle events.
     """
-    
-    
 
     redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
     redis_client = redis.from_url(redis_url, encoding="utf-8", decode_responses=True)
@@ -217,4 +215,3 @@ async def create_new_api_key(
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
