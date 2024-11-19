@@ -175,7 +175,6 @@ async def status():
 @app.post(
     "/admin/create-api-key",
     summary="Create a new API Key",
-    include_in_schema=False,  # Initially hidden from schema
 )
 async def create_new_api_key(
     user: str,
