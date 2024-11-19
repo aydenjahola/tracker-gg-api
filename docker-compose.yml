@@ -6,7 +6,6 @@ services:
     container_name: tracker-api
     environment:
       - ENVIRONMENT=production
-      - API_KEYS=${API_KEYS}
       - STEAM_API_KEY=${STEAM_API_KEY}
       - FLARESOLVERR_URL=${FLARESOLVERR_URL}
     restart: unless-stopped
